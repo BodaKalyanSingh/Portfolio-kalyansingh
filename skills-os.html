@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skills.OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Clash+Display:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0a0f;
+  --panel: #111118;
+  --panel2: #16161f;
+  --border: #1e1e2e;
+  --border2: #252535;
+  --text: #cdd6f4;
+  --subtext: #6c7086;
+  --overlay: #1e1e2e;
+  --blue: #89b4fa;
+  --green: #a6e3a1;
+  --yellow: #f9e2af;
+  --red: #f38ba8;
+  --mauve: #cba6f7;
+  --peach: #fab387;
+  --teal: #94e2d5;
+  --sky: #89dceb;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Space Mono', monospace;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* ── WINDOW CHROME ── */
+.window {
+  width: 100%;
+  max-width: 1100px;
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 40px 120px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
+  animation: rise 0.7s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(30px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* titlebar */
+.titlebar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  background: var(--panel2);
+  border-bottom: 1px solid var(--border);
+  user-select: none;
+}
+
+.dots { display: flex; gap: 7px; }
+.dot-close   { width:12px;height:12px;border-radius:50%;background:#f38ba8; }
+.dot-min     { width:12px;height:12px;border-radius:50%;background:#f9e2af; }
+.dot-max     { width:12px;height:12px;border-radius:50%;background:#a6e3a1; }
+
+.titlebar-title {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  color: var(--subtext);
+  letter-spacing: 0.05em;
+}
+
+.titlebar-cmd {
+  font-size: 11px;
+  color: var(--subtext);
+  background: var(--overlay);
+  border: 1px solid var(--border2);
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+
+/* breadcrumb path */
+.pathbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--subtext);
+  background: var(--panel);
+}
+.pathbar span { color: var(--blue); }
+.pathbar .sep { color: var(--border2); }
+
+/* ── LAYOUT ── */
+.explorer {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  height: 580px;
+}
+
+/* sidebar */
+.sidebar {
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 12px 0;
+}
+
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.sidebar-section {
+  padding: 4px 0;
+}
+
+.sidebar-label {
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--subtext);
+  padding: 6px 20px 4px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 20px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--subtext);
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  position: relative;
+}
+
+.sidebar-item:hover {
+  background: var(--overlay);
+  color: var(--text);
+}
+
+.sidebar-item.active {
+  background: rgba(137,180,250,0.08);
+  color: var(--blue);
+  border-left-color: var(--blue);
+}
+
+.sidebar-item .icon { font-size: 14px; width: 16px; text-align: center; }
+.sidebar-item .count {
+  margin-left: auto;
+  font-size: 9px;
+  background: var(--overlay);
+  padding: 1px 6px;
+  border-radius: 10px;
+  color: var(--subtext);
+}
+
+.sidebar-item.active .count {
+  background: rgba(137,180,250,0.15);
+  color: var(--blue);
+}
+
+/* main panel */
+.main {
+  overflow-y: auto;
+  position: relative;
+}
+
+.main::-webkit-scrollbar { width: 4px; }
+.main::-webkit-scrollbar-track { background: transparent; }
+.main::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+  z-index: 10;
+}
+
+.search-box {
+  flex: 1;
+  background: var(--overlay);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 6px 12px 6px 30px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--text);
+  outline: none;
+  position: relative;
+  transition: border-color 0.2s;
+}
+.search-box::placeholder { color: var(--subtext); }
+.search-box:focus { border-color: var(--blue); }
+
+.search-wrap {
+  flex: 1;
+  position: relative;
+}
+.search-wrap::before {
+  content: '⌕';
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--subtext);
+  font-size: 14px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 2px;
+  background: var(--overlay);
+  border-radius: 5px;
+  padding: 2px;
+}
+
+.view-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--subtext);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  transition: all 0.15s;
+}
+
+.view-btn.active, .view-btn:hover {
+  background: var(--blue);
+  color: var(--bg);
+}
+
+/* ── TABLE VIEW ── */
+.table-view {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-view thead tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.table-view th {
+  padding: 8px 16px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--subtext);
+  text-align: left;
+  font-weight: 400;
+  background: var(--panel2);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.table-view th:hover { color: var(--blue); }
+.table-view th .sort-arrow { margin-left: 4px; opacity: 0.4; }
+
+.table-view tbody tr {
+  border-bottom: 1px solid rgba(30,30,46,0.6);
+  cursor: pointer;
+  transition: background 0.1s;
+  animation: rowIn 0.4s ease both;
+}
+
+@keyframes rowIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.table-view tbody tr:nth-child(1)  { animation-delay: 0.05s; }
+.table-view tbody tr:nth-child(2)  { animation-delay: 0.07s; }
+.table-view tbody tr:nth-child(3)  { animation-delay: 0.09s; }
+.table-view tbody tr:nth-child(4)  { animation-delay: 0.11s; }
+.table-view tbody tr:nth-child(5)  { animation-delay: 0.13s; }
+.table-view tbody tr:nth-child(6)  { animation-delay: 0.15s; }
+.table-view tbody tr:nth-child(7)  { animation-delay: 0.17s; }
+.table-view tbody tr:nth-child(8)  { animation-delay: 0.19s; }
+.table-view tbody tr:nth-child(9)  { animation-delay: 0.21s; }
+.table-view tbody tr:nth-child(10) { animation-delay: 0.23s; }
+.table-view tbody tr:nth-child(n+11) { animation-delay: 0.25s; }
+
+.table-view tbody tr:hover { background: rgba(137,180,250,0.04); }
+.table-view tbody tr.selected { background: rgba(137,180,250,0.08); }
+
+.table-view td {
+  padding: 9px 16px;
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+.td-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 180px;
+}
+
+.skill-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.td-category .cat-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* proficiency bar */
+.prof-cell { min-width: 140px; }
+.prof-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.prof-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--overlay);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.prof-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.8s cubic-bezier(0.22,1,0.36,1);
+  width: 0%;
+}
+.prof-label {
+  font-size: 10px;
+  color: var(--subtext);
+  width: 26px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* type pill */
+.type-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+/* ── GRID VIEW ── */
+.grid-view {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  padding: 20px;
+}
+
+.grid-card {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  animation: cardIn 0.4s ease both;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.grid-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: var(--border2);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+}
+
+.grid-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+
+.grid-name {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.grid-cat {
+  font-size: 10px;
+  color: var(--subtext);
+  margin-bottom: 10px;
+}
+
+.grid-bar {
+  height: 3px;
+  background: var(--overlay);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.grid-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.8s 0.2s cubic-bezier(0.22,1,0.36,1);
+  width: 0%;
+}
+
+/* status bar */
+.statusbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 7px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--panel2);
+  font-size: 10px;
+  color: var(--subtext);
+}
+
+.statusbar .status-item { display: flex; align-items: center; gap: 5px; }
+.statusbar .status-item span { color: var(--text); }
+.status-pulse {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ── DETAIL PANEL (right click sim) ── */
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.detail-overlay.open { display: flex; }
+
+.detail-panel {
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 32px;
+  min-width: 320px;
+  max-width: 400px;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+  animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.detail-close {
+  position: absolute;
+  right: 16px; top: 16px;
+  background: none; border: none;
+  color: var(--subtext);
+  cursor: pointer; font-size: 18px;
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.detail-icon {
+  width: 56px; height: 56px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+}
+
+.detail-name {
+  font-family: 'Outfit', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.detail-cat { font-size: 12px; color: var(--subtext); margin-top: 2px; }
+
+.detail-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.detail-stat:last-child { border-bottom: none; }
+.detail-stat .key { color: var(--subtext); }
+.detail-stat .val { color: var(--text); font-weight: 700; }
+
+.detail-bar-wrap { margin-top: 20px; }
+.detail-bar-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--subtext); margin-bottom: 6px; }
+.detail-bar { height: 6px; background: var(--overlay); border-radius: 3px; overflow: hidden; }
+.detail-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s 0.1s ease; width: 0%; }
+
+/* empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--subtext);
+  font-size: 13px;
+  gap: 8px;
+}
+.empty-state .em-icon { font-size: 32px; opacity: 0.4; }
+</style>
+</head>
+<body>
+
+<div class="window">
+
+  <!-- Title bar -->
+  <div class="titlebar">
+    <div class="dots">
+      <div class="dot-close"></div>
+      <div class="dot-min"></div>
+      <div class="dot-max"></div>
+    </div>
+    <div class="titlebar-title">Skills.OS — File Explorer</div>
+    <div class="titlebar-cmd">~/portfolio/skills</div>
+  </div>
+
+  <!-- Path bar -->
+  <div class="pathbar">
+    <span>~</span><span class="sep">/</span>
+    <span>portfolio</span><span class="sep">/</span>
+    <span id="currentPath">All Technologies</span>
+  </div>
+
+  <!-- Explorer layout -->
+  <div class="explorer">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Drives</div>
+        <div class="sidebar-item active" onclick="setCategory('all', this)" data-cat="all">
+          <span class="icon">💾</span> All Skills <span class="count" id="cnt-all">65</span>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Categories</div>
+        <div class="sidebar-item" onclick="setCategory('core', this)" data-cat="core">
+          <span class="icon">⚡</span> Core Foundation <span class="count">12</span>
+        </div>
+        <div class="sidebar-item" onclick="setCategory('ai', this)" data-cat="ai">
+          <span class="icon">🤖</span> AI & Agents <span class="count">14</span>
+        </div>
+        <div class="sidebar-item" onclick="setCategory('db', this)" data-cat="db">
+          <span class="icon">🗄️</span> Databases <span class="count">8</span>
+        </div>
+        <div class="sidebar-item" onclick="setCategory('cloud', this)" data-cat="cloud">
+          <span class="icon">☁️</span> Cloud & DevOps <span class="count">13</span>
+        </div>
+        <div class="sidebar-item" onclick="setCategory('design', this)" data-cat="design">
+          <span class="icon">🎨</span> Design & Mobile <span class="count">10</span>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Proficiency</div>
+        <div class="sidebar-item" onclick="setProfFilter('expert', this)" data-cat="prof-expert">
+          <span class="icon">★</span> Expert (90%+) <span class="count">12</span>
+        </div>
+        <div class="sidebar-item" onclick="setProfFilter('advanced', this)" data-cat="prof-adv">
+          <span class="icon">◆</span> Advanced (70%+) <span class="count">28</span>
+        </div>
+        <div class="sidebar-item" onclick="setProfFilter('learning', this)" data-cat="prof-learn">
+          <span class="icon">◇</span> Learning <span class="count">25</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main panel -->
+    <div class="main" id="mainPanel">
+      <div class="toolbar">
+        <div class="search-wrap">
+          <input class="search-box" id="searchBox" placeholder="Search skills..." oninput="renderTable()">
+        </div>
+        <div class="view-toggle">
+          <button class="view-btn active" id="btnTable" onclick="switchView('table')">≡</button>
+          <button class="view-btn" id="btnGrid" onclick="switchView('grid')">⊞</button>
+        </div>
+      </div>
+      <div id="contentArea"></div>
+    </div>
+
+  </div>
+
+  <!-- Status bar -->
+  <div class="statusbar">
+    <div class="status-item"><div class="status-pulse"></div> Active</div>
+    <div class="status-item">Items: <span id="statusCount">65</span></div>
+    <div class="status-item">Category: <span id="statusCat">All</span></div>
+    <div class="status-item" style="margin-left:auto;">Skills.OS v1.0</div>
+  </div>
+
+</div>
+
+<!-- Detail overlay -->
+<div class="detail-overlay" id="detailOverlay" onclick="closeDetail(event)">
+  <div class="detail-panel" id="detailPanel">
+    <div class="detail-header">
+      <div class="detail-icon" id="dIcon"></div>
+      <div>
+        <div class="detail-name" id="dName"></div>
+        <div class="detail-cat" id="dCat"></div>
+      </div>
+    </div>
+    <div class="detail-stat"><span class="key">Type</span><span class="val" id="dType"></span></div>
+    <div class="detail-stat"><span class="key">Proficiency</span><span class="val" id="dProf"></span></div>
+    <div class="detail-stat"><span class="key">Experience</span><span class="val" id="dExp"></span></div>
+    <div class="detail-stat"><span class="key">Status</span><span class="val" id="dStatus"></span></div>
+    <div class="detail-bar-wrap">
+      <div class="detail-bar-label"><span>Proficiency</span><span id="dPct"></span></div>
+      <div class="detail-bar"><div class="detail-bar-fill" id="dBarFill"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CAT_COLORS = {
+  core:   { bg: 'rgba(137,180,250,0.15)', color: '#89b4fa', label: 'Core Foundation' },
+  ai:     { bg: 'rgba(203,166,247,0.15)', color: '#cba6f7', label: 'AI & Agents' },
+  db:     { bg: 'rgba(148,226,213,0.15)', color: '#94e2d5', label: 'Databases' },
+  cloud:  { bg: 'rgba(249,226,175,0.15)', color: '#f9e2af', label: 'Cloud & DevOps' },
+  design: { bg: 'rgba(243,139,168,0.15)', color: '#f38ba8', label: 'Design & Mobile' },
+};
+
+const SKILLS = [
+  // Core Foundation
+  { name:'Python',       cat:'core', icon:'🐍', prof:95, exp:'4 yrs', type:'Language',   status:'Primary' },
+  { name:'JavaScript',   cat:'core', icon:'🟨', prof:92, exp:'4 yrs', type:'Language',   status:'Primary' },
+  { name:'TypeScript',   cat:'core', icon:'🔷', prof:88, exp:'3 yrs', type:'Language',   status:'Active' },
+  { name:'React',        cat:'core', icon:'⚛️', prof:90, exp:'3 yrs', type:'Framework',  status:'Primary' },
+  { name:'Next.js 14',   cat:'core', icon:'▲',  prof:85, exp:'2 yrs', type:'Framework',  status:'Active' },
+  { name:'Tailwind CSS', cat:'core', icon:'💨', prof:88, exp:'2 yrs', type:'Framework',  status:'Active' },
+  { name:'Node.js',      cat:'core', icon:'🟩', prof:80, exp:'3 yrs', type:'Runtime',    status:'Active' },
+  { name:'HTML5',        cat:'core', icon:'🧡', prof:96, exp:'5 yrs', type:'Markup',     status:'Primary' },
+  { name:'CSS3',         cat:'core', icon:'💙', prof:90, exp:'5 yrs', type:'Styling',    status:'Primary' },
+  { name:'React Native', cat:'core', icon:'📱', prof:75, exp:'2 yrs', type:'Framework',  status:'Active' },
+  { name:'Figma',        cat:'core', icon:'🎯', prof:82, exp:'3 yrs', type:'Design',     status:'Active' },
+  { name:'UI Design',    cat:'core', icon:'✏️', prof:78, exp:'3 yrs', type:'Discipline', status:'Active' },
+
+  // AI & Agents
+  { name:'OpenAI GPT-4', cat:'ai', icon:'🤖', prof:88, exp:'2 yrs', type:'AI Model',   status:'Active' },
+  { name:'Claude 4.5',   cat:'ai', icon:'🌊', prof:85, exp:'1 yr',  type:'AI Model',   status:'Active' },
+  { name:'Gemini',       cat:'ai', icon:'♊', prof:72, exp:'1 yr',  type:'AI Model',   status:'Learning' },
+  { name:'LangChain',    cat:'ai', icon:'🔗', prof:80, exp:'1 yr',  type:'Framework',  status:'Active' },
+  { name:'LangGraph',    cat:'ai', icon:'📊', prof:70, exp:'1 yr',  type:'Framework',  status:'Active' },
+  { name:'CrewAI',       cat:'ai', icon:'👥', prof:68, exp:'6 mo',  type:'Framework',  status:'Learning' },
+  { name:'AutoGen',      cat:'ai', icon:'⚙️', prof:65, exp:'6 mo',  type:'Framework',  status:'Learning' },
+  { name:'RAG',          cat:'ai', icon:'📚', prof:78, exp:'1 yr',  type:'Technique',  status:'Active' },
+  { name:'LLaMA',        cat:'ai', icon:'🦙', prof:62, exp:'6 mo',  type:'AI Model',   status:'Learning' },
+  { name:'MCP',          cat:'ai', icon:'🔌', prof:70, exp:'6 mo',  type:'Protocol',   status:'Active' },
+  { name:'Expo',         cat:'ai', icon:'📦', prof:73, exp:'1 yr',  type:'Platform',   status:'Active' },
+  { name:'Framer',       cat:'ai', icon:'🖼️', prof:68, exp:'1 yr',  type:'Design',     status:'Active' },
+  { name:'Canva',        cat:'ai', icon:'🎨', prof:82, exp:'2 yrs', type:'Design',     status:'Active' },
+  { name:'Prototyping',  cat:'ai', icon:'🔧', prof:80, exp:'2 yrs', type:'Discipline', status:'Active' },
+
+  // Databases
+  { name:'PostgreSQL', cat:'db', icon:'🐘', prof:85, exp:'3 yrs', type:'SQL DB',     status:'Primary' },
+  { name:'MongoDB',    cat:'db', icon:'🍃', prof:80, exp:'2 yrs', type:'NoSQL DB',   status:'Active' },
+  { name:'Redis',      cat:'db', icon:'🔴', prof:72, exp:'2 yrs', type:'Cache DB',   status:'Active' },
+  { name:'Supabase',   cat:'db', icon:'⚡', prof:78, exp:'1 yr',  type:'BaaS',       status:'Active' },
+  { name:'Convex',     cat:'db', icon:'🔶', prof:65, exp:'6 mo',  type:'BaaS',       status:'Learning' },
+  { name:'Pinecone',   cat:'db', icon:'🌲', prof:70, exp:'1 yr',  type:'Vector DB',  status:'Active' },
+  { name:'Firebase',   cat:'db', icon:'🔥', prof:75, exp:'2 yrs', type:'BaaS',       status:'Active' },
+  { name:'MySQL',      cat:'db', icon:'🐬', prof:78, exp:'2 yrs', type:'SQL DB',     status:'Active' },
+
+  // Cloud & DevOps
+  { name:'AWS',            cat:'cloud', icon:'☁️', prof:80, exp:'2 yrs', type:'Cloud',    status:'Active' },
+  { name:'GCP',            cat:'cloud', icon:'🌐', prof:68, exp:'1 yr',  type:'Cloud',    status:'Active' },
+  { name:'Docker',         cat:'cloud', icon:'🐳', prof:82, exp:'2 yrs', type:'DevOps',   status:'Active' },
+  { name:'Kubernetes',     cat:'cloud', icon:'⎈',  prof:70, exp:'1 yr',  type:'DevOps',   status:'Active' },
+  { name:'Vercel',         cat:'cloud', icon:'▲',  prof:88, exp:'2 yrs', type:'Hosting',  status:'Primary' },
+  { name:'Terraform',      cat:'cloud', icon:'🏗️', prof:65, exp:'1 yr',  type:'IaC',      status:'Learning' },
+  { name:'GitHub Actions', cat:'cloud', icon:'🔄', prof:78, exp:'2 yrs', type:'CI/CD',    status:'Active' },
+  { name:'Prometheus',     cat:'cloud', icon:'📈', prof:60, exp:'6 mo',  type:'Monitor',  status:'Learning' },
+  { name:'Grafana',        cat:'cloud', icon:'📊', prof:62, exp:'6 mo',  type:'Monitor',  status:'Learning' },
+  { name:'Swift',          cat:'cloud', icon:'🍎', prof:58, exp:'6 mo',  type:'Language', status:'Learning' },
+  { name:'Flutter',        cat:'cloud', icon:'💙', prof:65, exp:'1 yr',  type:'Framework',status:'Active' },
+  { name:'Sketch',         cat:'cloud', icon:'💎', prof:70, exp:'1 yr',  type:'Design',   status:'Active' },
+  { name:'Illustrator',    cat:'cloud', icon:'🖊️', prof:72, exp:'2 yrs', type:'Design',   status:'Active' },
+
+  // Design & Mobile
+  { name:'Figma',        cat:'design', icon:'🎯', prof:82, exp:'3 yrs', type:'Design',     status:'Primary' },
+  { name:'Adobe XD',     cat:'design', icon:'🔮', prof:75, exp:'2 yrs', type:'Design',     status:'Active' },
+  { name:'React Native', cat:'design', icon:'📱', prof:75, exp:'2 yrs', type:'Framework',  status:'Active' },
+  { name:'Expo',         cat:'design', icon:'📦', prof:73, exp:'1 yr',  type:'Platform',   status:'Active' },
+  { name:'Swift',        cat:'design', icon:'🍎', prof:58, exp:'6 mo',  type:'Language',   status:'Learning' },
+  { name:'Kotlin',       cat:'design', icon:'🏝️', prof:60, exp:'1 yr',  type:'Language',   status:'Learning' },
+  { name:'Flutter',      cat:'design', icon:'💙', prof:65, exp:'1 yr',  type:'Framework',  status:'Active' },
+  { name:'Canva',        cat:'design', icon:'🎨', prof:82, exp:'2 yrs', type:'Design',     status:'Active' },
+  { name:'Framer',       cat:'design', icon:'🖼️', prof:68, exp:'1 yr',  type:'Design',     status:'Active' },
+  { name:'Photoshop',    cat:'design', icon:'🖌️', prof:70, exp:'2 yrs', type:'Design',     status:'Active' },
+  { name:'UX Research',  cat:'design', icon:'🔍', prof:72, exp:'2 yrs', type:'Discipline', status:'Active' },
+];
+
+let currentCat = 'all';
+let profFilter = null;
+let viewMode = 'table';
+let selectedRow = null;
+let barsAnimated = false;
+
+function getFiltered() {
+  const q = (document.getElementById('searchBox')?.value || '').toLowerCase();
+  return SKILLS.filter(s => {
+    if (currentCat !== 'all' && s.cat !== currentCat) return false;
+    if (profFilter === 'expert'   && s.prof < 90) return false;
+    if (profFilter === 'advanced' && s.prof < 70) return false;
+    if (profFilter === 'learning' && s.prof >= 70) return false;
+    if (q && !s.name.toLowerCase().includes(q) && !s.type.toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+function setCategory(cat, el) {
+  currentCat = cat;
+  profFilter = null;
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  const names = { all:'All Technologies', core:'Core Foundation', ai:'AI & Agents', db:'Databases', cloud:'Cloud & DevOps', design:'Design & Mobile' };
+  document.getElementById('currentPath').textContent = names[cat] || cat;
+  document.getElementById('statusCat').textContent = names[cat] || cat;
+  barsAnimated = false;
+  renderTable();
+}
+
+function setProfFilter(level, el) {
+  profFilter = level;
+  currentCat = 'all';
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('currentPath').textContent = level.charAt(0).toUpperCase()+level.slice(1)+' Skills';
+  document.getElementById('statusCat').textContent = level;
+  barsAnimated = false;
+  renderTable();
+}
+
+function switchView(mode) {
+  viewMode = mode;
+  document.getElementById('btnTable').classList.toggle('active', mode === 'table');
+  document.getElementById('btnGrid').classList.toggle('active', mode === 'grid');
+  barsAnimated = false;
+  renderTable();
+}
+
+function renderTable() {
+  const data = getFiltered();
+  document.getElementById('statusCount').textContent = data.length;
+  const area = document.getElementById('contentArea');
+
+  if (data.length === 0) {
+    area.innerHTML = `<div class="empty-state"><div class="em-icon">📭</div><div>No matching skills found</div></div>`;
+    return;
+  }
+
+  if (viewMode === 'grid') {
+    area.innerHTML = `<div class="grid-view">${data.map((s,i) => {
+      const cc = CAT_COLORS[s.cat];
+      return `<div class="grid-card" style="animation-delay:${i*0.03}s" onclick="openDetail(${SKILLS.indexOf(s)})">
+        <div class="grid-icon" style="background:${cc.bg}">${s.icon}</div>
+        <div class="grid-name">${s.name}</div>
+        <div class="grid-cat" style="color:${cc.color}">${s.type}</div>
+        <div class="grid-bar"><div class="grid-fill" data-prof="${s.prof}" style="background:${cc.color}; width:0%"></div></div>
+      </div>`;
+    }).join('')}</div>`;
+  } else {
+    area.innerHTML = `<table class="table-view">
+      <thead><tr>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Type</th>
+        <th class="prof-cell">Proficiency</th>
+        <th>Experience</th>
+        <th>Status</th>
+      </tr></thead>
+      <tbody>${data.map((s,i) => {
+        const cc = CAT_COLORS[s.cat];
+        const statusColor = s.status==='Primary' ? '#a6e3a1' : s.status==='Active' ? '#89b4fa' : '#f9e2af';
+        return `<tr style="animation-delay:${i*0.03}s" onclick="openDetail(${SKILLS.indexOf(s)})">
+          <td><div class="td-name">
+            <div class="skill-icon" style="background:${cc.bg}">${s.icon}</div>
+            <span>${s.name}</span>
+          </div></td>
+          <td><span class="cat-badge" style="background:${cc.bg};color:${cc.color}">${cc.label}</span></td>
+          <td style="color:${cc.color};font-size:11px">${s.type}</td>
+          <td class="prof-cell"><div class="prof-wrap">
+            <div class="prof-bar"><div class="prof-fill" data-prof="${s.prof}" style="background:${cc.color};width:0%"></div></div>
+            <div class="prof-label">${s.prof}%</div>
+          </div></td>
+          <td style="color:var(--subtext)">${s.exp}</td>
+          <td><span style="color:${statusColor}"><span class="type-dot" style="background:${statusColor}"></span>${s.status}</span></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  }
+
+  // animate bars after render
+  setTimeout(() => {
+    document.querySelectorAll('.prof-fill, .grid-fill').forEach(el => {
+      el.style.width = el.dataset.prof + '%';
+    });
+  }, 80);
+}
+
+function openDetail(idx) {
+  const s = SKILLS[idx];
+  const cc = CAT_COLORS[s.cat];
+  document.getElementById('dIcon').style.background = cc.bg;
+  document.getElementById('dIcon').textContent = s.icon;
+  document.getElementById('dName').textContent = s.name;
+  document.getElementById('dCat').textContent = cc.label;
+  document.getElementById('dType').textContent = s.type;
+  document.getElementById('dProf').textContent = s.prof + '%';
+  document.getElementById('dExp').textContent = s.exp;
+  document.getElementById('dStatus').textContent = s.status;
+  document.getElementById('dPct').textContent = s.prof + '%';
+  const fill = document.getElementById('dBarFill');
+  fill.style.background = cc.color;
+  fill.style.width = '0%';
+  document.getElementById('detailOverlay').classList.add('open');
+  setTimeout(() => { fill.style.width = s.prof + '%'; }, 100);
+}
+
+function closeDetail(e) {
+  if (e.target === document.getElementById('detailOverlay')) {
+    document.getElementById('detailOverlay').classList.remove('open');
+  }
+}
+
+renderTable();
+</script>
+</body>
+</html>
